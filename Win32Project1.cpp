@@ -1,16 +1,21 @@
 // Win32Project1.cpp : Defines the entry point for the application.
-//Line 30 contains the message box.
+//Line 33 contains the message box.
+//a button and text box are also added.
+//when the button is pressed a messagebox displays the text from the edit box.
 //
 
 #include "stdafx.h"
 #include "Win32Project1.h"
 
 #define MAX_LOADSTRING 100
+#define IDC_MAIN_BUTTON 101//Create an id for the button
+#define IDC_MAIN_EDIT	102			// Edit box identifier
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
+HWND hEdit;			//THE EDIT BOX
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -29,7 +34,18 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
  	// TODO: Place code here.
 	int nResult = MessageBox(NULL,"My message box example", "Hello!", MB_ICONASTERISK|MB_ABORTRETRYIGNORE);
 	//Note - Select 'Configuration Properties' and change 'Character Set' from 'Use Unicode Character Set' to 'Use Multi-Byte Character Set'. Click apply. 
-
+		switch(nResult)
+	{
+		case IDABORT:
+			// 'Abort' was pressed
+			break;
+		case IDRETRY:
+			// 'Retry' was pressed
+			break;
+		case IDIGNORE:
+			// 'Ignore' was pressed
+			break;
+	}
 
 	MSG msg;
 	HACCEL hAccelTable;
@@ -148,6 +164,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
+		case IDC_MAIN_BUTTON://MCT ADDED
+		{
+			LPCSTR buffer[256];
+SendMessage(hEdit,
+		WM_GETTEXT,
+		sizeof(buffer)/sizeof(buffer[0]),
+		reinterpret_cast<LPARAM>(buffer));
+MessageBox(NULL,
+		(LPCSTR)buffer,
+		"Information",
+		MB_ICONINFORMATION);
+		}
+		break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -159,6 +188,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
+		break;
+		//added case WM_CREATE - runs when window is created.
+	case WM_CREATE:
+		{
+			//creates button - https://msdn.microsoft.com/en-us/library/windows/desktop/ms632680(v=vs.85).aspx
+			HWND hWndButton=CreateWindowEx(NULL,
+				"Button",
+				"OK",
+				WS_TABSTOP|WS_VISIBLE|WS_CHILD|BS_DEFPUSHBUTTON,
+				50,
+				220,
+				100,
+				24,
+				hWnd,
+				(HMENU)IDC_MAIN_BUTTON,
+				GetModuleHandle(NULL),
+				NULL);
+			hEdit=CreateWindowEx(WS_EX_CLIENTEDGE,
+		"EDIT",
+		"",
+		WS_CHILD|WS_VISIBLE|ES_MULTILINE|ES_AUTOVSCROLL|ES_AUTOHSCROLL,
+		50,
+		100,
+		200,
+		100,
+		hWnd,
+		(HMENU)IDC_MAIN_EDIT,
+		GetModuleHandle(NULL),
+		NULL);
+		}
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
